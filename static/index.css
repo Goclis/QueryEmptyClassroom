@@ -1,0 +1,31 @@
+h1, h2, h3, h4, h5, h6 {
+	color: #555555;
+}
+
+body {
+	padding: 40px;
+	padding-top: 20px;
+	font-family: "微软雅黑";
+}
+
+input, select, button {
+	margin: 5px;
+}
+
+/* 覆盖bootstrap自带左对齐样式 */
+.table td {
+	text-align: center;
+}
+
+/* 输入框 */
+.input-data {
+	
+}
+
+.input-area {
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	/*border: 1px solid black;*/
+	padding-top: 3%;
+}
+
