@@ -35,6 +35,8 @@ nosetests.xml
 .project
 .pydevproject
 
-
+# my .gitignore
 *.sublime-project
 *.sublime-workspace
+sql
+conf
