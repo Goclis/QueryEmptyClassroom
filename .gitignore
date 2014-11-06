@@ -36,8 +36,3 @@ nosetests.xml
 .pydevproject
 
 # my .gitignore
-*.sublime-project
-*.sublime-workspace
-sql
-conf
-data-for-git.md
