@@ -5,3 +5,8 @@ START_MONTH = 9
 START_DAY = 22
 
 TERM_ID = '14151'
+
+DB_HOST = ''
+DB_USER = ''
+DB_PASS = ''
+DB_NAME = ''

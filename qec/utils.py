@@ -3,6 +3,7 @@
 # two filter
 from datetime import date as datelib, timedelta
 import config
+import MySQLdb
 
 
 # @brief filter parameters of common query.
@@ -84,4 +85,107 @@ def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson):
 	return filter_common(campus, week, date, start_lesson, end_lesson)
 
 
+def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
+	# Todo: 替换成安全的查询， = = 防止过滤不干净
+	connection = MySQLdb.connect(
+		host=config.DB_HOST, user=config.DB_USER, passwd=config.DB_PASS, db=config.DB_NAME, charset='utf8')
+	cursor = connection.cursor()
 
+	classrooms = []
+	ALL_CLASSROOM_SQL = 'SELECT DISTINCT course_place FROM course_schedule WHERE course_place LIKE %s'
+	cursor.execute(ALL_CLASSROOM_SQL, ['%-%'])
+	rs = cursor.fetchall()
+	for r in rs:
+		classrooms.append(r[0])
+	# 判断单双周
+	if week % 2 == 0:
+		search_course_type = 1 # 双周，设置为单周
+	else:
+		search_course_type = 2 # 单周，设置为双周
+
+	CLASSROOM_USING_SQL = 'SELECT DISTINCT course_place FROM course_schedule WHERE ' \
+			+ '((course_type != %s) ' \
+			+ "AND (course_date = %s) " \
+			+ "AND (course_start_week <= %s AND course_end_week >= %s)" \
+			+ "AND ((%s - course_end_lesson) * (%s - course_start_lesson) <= 0))"
+	
+	cursor.execute(CLASSROOM_USING_SQL, 
+		[search_course_type, date, week, week, start_lesson, end_lesson])
+	rs = cursor.fetchall()
+	for r in rs:
+		if classrooms.__contains__(r[0]):
+			classrooms.remove(r[0])
+
+	# Exceptions:
+	try:
+		classrooms.remove(u"九龙湖其它-大活322")
+	except:
+		pass
+
+	jlh = []
+	djq = []
+	spl = []
+
+
+	# 根据各大校区教室名称特征区分
+	for room in classrooms:
+		if room.find(u'教') != -1:
+			jlh.append(room)
+		elif room.find(u'基') != -1 \
+				or (room.find(u'综合') != -1 and room.find(u'综合楼') == -1) \
+				or room.find(u'公卫') != -1:
+			djq.append(room)
+		else:
+			spl.append(room)
+	if campus == 'jlh':
+		return sort_classroom_by_CN(jlh)
+	elif campus == 'djq':
+		return djq 
+	elif campus == 'spl':
+		return spl
+	else:
+		return []
+
+
+# 根据中文顺序对列表排序，返回排好序的列表
+def sort_classroom_by_CN(l):
+	# 将九龙湖的教室进行排序，花费空间节省时间
+	tmpJLH = []
+	for room in l:
+		if room.find(u"教一") != -1:
+			tmpJLH.append(room.replace(u"教一", "J1"))
+		if room.find(u"教二") != -1:
+			tmpJLH.append(room.replace(u"教二", "J2"))
+		if room.find(u"教三") != -1:
+			tmpJLH.append(room.replace(u"教三", "J3"))
+		if room.find(u"教四") != -1:
+			tmpJLH.append(room.replace(u"教四", "J4"))
+		if room.find(u"教五") != -1:
+			tmpJLH.append(room.replace("教五", "J5"))
+		if room.find(u"教六") != -1:
+			tmpJLH.append(room.replace(u"教六", "J6"))
+		if room.find(u"教七") != -1:
+			tmpJLH.append(room.replace(u"教七", "J7"))
+		if room.find(u"教八") != -1:
+			tmpJLH.append(room.replace(u"教八", "J8"))
+
+	tmpJLH.sort()
+	l = []
+	for room in tmpJLH:
+		if room.find("J1") != -1:
+			l.append(room.replace("J1", u"教一"))
+		if room.find("J2") != -1:
+			l.append(room.replace("J2", u"教二"))
+		if room.find("J3") != -1:
+			l.append(room.replace("J3", u"教三"))
+		if room.find("J4") != -1:
+			l.append(room.replace("J4", u"教四"))
+		if room.find("J5") != -1:
+			l.append(room.replace("J5", u"教五"))
+		if room.find("J6") != -1:
+			l.append(room.replace("J6", u"教六"))
+		if room.find("J7") != -1:
+			l.append(room.replace("J7", u"教七"))
+		if room.find("J8") != -1:
+			l.append(room.replace("J8", u"教八"))
+	return l

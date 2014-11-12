@@ -2,7 +2,7 @@
 
 import json
 from datetime import date, timedelta
-from qec.utils import filter_quick
+from qec.utils import filter_quick, get_free_classrooms
 import tornado.web
 
 class QuickQueryHandler(tornado.web.RequestHandler):
@@ -15,7 +15,8 @@ class QuickQueryHandler(tornado.web.RequestHandler):
 			self.write(json.dumps([u'参数不对哦']))
 		else:
 			# access db
-			result = ['j1-111']
+			result = get_free_classrooms(
+				filter_result[0], filter_result[1], filter_result[2], filter_result[3], filter_result[4])
 			self.write(json.dumps(result))
 
 		self.finish()
