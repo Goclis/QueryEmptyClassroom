@@ -2,13 +2,14 @@
 
 # two filter
 from datetime import date as datelib, timedelta
+import config
 
 
 # @brief filter parameters of common query.
 #
 # @return if parameter is ok, return the tuple (campus, week, date, start_lesson, end_lesson),
 #	else return None.
-def filter_common(campus, week, date, start_lesson, end_lesson, term_tail):
+def filter_common(campus, week, date, start_lesson, end_lesson):
 	# filter paramter
 	try:
 		# some default limitation
@@ -21,6 +22,8 @@ def filter_common(campus, week, date, start_lesson, end_lesson, term_tail):
 		end_lesson_low = 1
 		end_lesson_high = 13
 		campus_options = ['djq', 'spl', 'jlh']
+
+		term_tail = config.TERM_ID[-1:]
 
 		# change limitation according to term_tail and campus
 		if term_tail == '1':
@@ -56,12 +59,12 @@ def filter_common(campus, week, date, start_lesson, end_lesson, term_tail):
 #
 # @return if parameter is ok, return the tuple (campus, week, date, start_lesson, end_lesson),
 #	else return None.
-def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson, term_tail, start_year, start_month, start_day):
+def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson):
 	if today_or_tomorrow not in ['today', 'tomorrow']:
 		return None
 
 	# convert today_or_tomorrow to week and date
-	start_date = datelib(start_year, start_month, start_day)
+	start_date = datelib(config.START_YEAR, config.START_MONTH, config.START_DAY)
 	check_date = datelib.today()
 	if today_or_tomorrow == 'tomorrow':
 		try:
@@ -78,7 +81,7 @@ def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson, term_tail,
 	week = delta.days / 7 + 1
 	date = check_date.isoweekday()
 
-	return filter_common(campus, week, date, start_lesson, end_lesson, term_tail)
+	return filter_common(campus, week, date, start_lesson, end_lesson)
 
 
 
