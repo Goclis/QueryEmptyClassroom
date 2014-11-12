@@ -1,8 +1,5 @@
 # -*- coding:utf-8 -*-
 
-import sys
-print sys.path
-
 from qec.common_query_handler import CommonQueryHandler
 from qec.quick_query_handler import QuickQueryHandler
 import tornado.web
@@ -18,14 +15,14 @@ class Application(tornado.web.Application):
 	def __init__(self):
 		handlers = [
 			(r'/query/([a-z]{3})/(\d{1,2})/(\d)/(\d{1,2})/(\d{1,2})', CommonQueryHandler),
-			(r'/query/([a-z]{3})/([a-z]{3})/(\d{1,2})/(\d{1,2})', QuickQueryHandler)
+			(r'/query/([a-z]{3})/([a-z]{1,7})/(\d{1,2})/(\d{1,2})', QuickQueryHandler)
 		]
 
 		tornado.web.Application.__init__(self, handlers, debug=True)
 
 
 if __name__ == "__main__":
-	tornado.options.parse_commond_line()
+	tornado.options.parse_command_line()
 	http_server = tornado.httpserver.HTTPServer(Application())
 	http_server.listen(options.port)
-	tornado.ioloop.IOloop.instance().start()
+	tornado.ioloop.IOLoop.instance().start()
