@@ -15,7 +15,7 @@ class Application(tornado.web.Application):
 	def __init__(self):
 		handlers = [
 			(r'/query/([a-z]{3})/(\d{1,2})/(\d)/(\d{1,2})/(\d{1,2})', CommonQueryHandler),
-			(r'/query/([a-z]{3})/([a-z]{1,7})/(\d{1,2})/(\d{1,2})', QuickQueryHandler)
+			(r'/query/([a-z]{3})/([a-z]{1,8})/(\d{1,2})/(\d{1,2})', QuickQueryHandler)
 		]
 
 		tornado.web.Application.__init__(self, handlers, debug=True)

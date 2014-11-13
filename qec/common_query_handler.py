@@ -2,7 +2,7 @@
 
 import json
 import tornado.web
-from qec.utils import filter_common
+from qec.utils import filter_common, get_free_classrooms
 
 class CommonQueryHandler(tornado.web.RequestHandler):
 

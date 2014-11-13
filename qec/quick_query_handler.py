@@ -17,6 +17,7 @@ class QuickQueryHandler(tornado.web.RequestHandler):
 			# access db
 			result = get_free_classrooms(
 				filter_result[0], filter_result[1], filter_result[2], filter_result[3], filter_result[4])
+			
 			self.write(json.dumps(result))
 
 		self.finish()
