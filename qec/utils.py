@@ -4,6 +4,10 @@
 from datetime import date as datelib, timedelta
 import config
 import MySQLdb
+import copy
+
+
+classrooms = None
 
 
 # @brief filter parameters of common query.
@@ -84,37 +88,18 @@ def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson):
 
 	return filter_common(campus, week, date, start_lesson, end_lesson)
 
-
-def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
-	# Todo: 替换成安全的查询， = = 防止过滤不干净
+def get_classroom_list():
 	connection = MySQLdb.connect(
 		host=config.DB_HOST, user=config.DB_USER, passwd=config.DB_PASS, db=config.DB_NAME, charset='utf8')
 	cursor = connection.cursor()
 
+	global classrooms
 	classrooms = []
 	ALL_CLASSROOM_SQL = 'SELECT DISTINCT course_place FROM course_schedule WHERE course_place LIKE %s'
 	cursor.execute(ALL_CLASSROOM_SQL, ['%-%'])
 	rs = cursor.fetchall()
 	for r in rs:
 		classrooms.append(r[0])
-	# 判断单双周
-	if week % 2 == 0:
-		search_course_type = 1 # 双周，设置为单周
-	else:
-		search_course_type = 2 # 单周，设置为双周
-
-	CLASSROOM_USING_SQL = 'SELECT DISTINCT course_place FROM course_schedule WHERE ' \
-			+ '((course_type != %s) ' \
-			+ "AND (course_date = %s) " \
-			+ "AND (course_start_week <= %s AND course_end_week >= %s)" \
-			+ "AND ((%s - course_end_lesson) * (%s - course_start_lesson) <= 0))"
-	
-	cursor.execute(CLASSROOM_USING_SQL, 
-		[search_course_type, date, week, week, start_lesson, end_lesson])
-	rs = cursor.fetchall()
-	for r in rs:
-		if classrooms.__contains__(r[0]):
-			classrooms.remove(r[0])
 
 	# Exceptions:
 	try:
@@ -122,13 +107,49 @@ def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
 	except:
 		pass
 
+
+def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
+	global classrooms
+
+	if classrooms is None:
+		try:
+			get_classroom_list()
+		except:
+			return [u'DB_ERROR']
+
+	try:
+		connection = MySQLdb.connect(
+			host=config.DB_HOST, user=config.DB_USER, passwd=config.DB_PASS, db=config.DB_NAME, charset='utf8')
+		cursor = connection.cursor()
+
+		rtn_classrooms = copy.deepcopy(classrooms)
+		# 判断单双周
+		if week % 2 == 0:
+			search_course_type = 1 # 双周，设置为单周
+		else:
+			search_course_type = 2 # 单周，设置为双周
+
+		CLASSROOM_USING_SQL = 'SELECT DISTINCT course_place FROM course_schedule WHERE ' \
+				+ '((course_type != %s) ' \
+				+ "AND (course_date = %s) " \
+				+ "AND (course_start_week <= %s AND course_end_week >= %s)" \
+				+ "AND ((%s - course_end_lesson) * (%s - course_start_lesson) <= 0))"
+		
+		cursor.execute(CLASSROOM_USING_SQL, 
+			[search_course_type, date, week, week, start_lesson, end_lesson])
+		rs = cursor.fetchall()
+		for r in rs:
+			if rtn_classrooms.__contains__(r[0]):
+				rtn_classrooms.remove(r[0])
+	except:
+		return [u'DB_ERROR']
+
 	jlh = []
 	djq = []
 	spl = []
 
-
 	# 根据各大校区教室名称特征区分
-	for room in classrooms:
+	for room in rtn_classrooms:
 		if room.find(u'教') != -1:
 			jlh.append(room)
 		elif room.find(u'基') != -1 \
