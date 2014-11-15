@@ -107,15 +107,11 @@ def get_classroom_list():
 	except:
 		pass
 
+	connection.close()
+
 
 def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
 	global classrooms
-
-	if classrooms is None:
-		try:
-			get_classroom_list()
-		except:
-			return [u'DB_ERROR']
 
 	try:
 		connection = MySQLdb.connect(
@@ -210,3 +206,11 @@ def sort_classroom_by_CN(l):
 		if room.find("J8") != -1:
 			l.append(room.replace("J8", u"教八"))
 	return l
+
+
+
+try:
+	get_classroom_list()
+except:
+	print 'Initialization failed.\n'
+	exit()
