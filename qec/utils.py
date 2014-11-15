@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 
-# two filter
 from datetime import date as datelib, timedelta
 import config
 import MySQLdb
@@ -15,7 +14,6 @@ classrooms = None
 # @return if parameter is ok, return the tuple (campus, week, date, start_lesson, end_lesson),
 #	else return None.
 def filter_common(campus, week, date, start_lesson, end_lesson):
-	# filter paramter
 	try:
 		# some default limitation
 		week_low = 1
