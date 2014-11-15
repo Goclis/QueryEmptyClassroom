@@ -8,15 +8,15 @@ sys.path.insert(0, '../crawler')  # 为了导入配置信息
 import crawlerconfig as settings
 import MySQLdb
 
-# api_1: query/[spl, djq, jlh]/[which week]/[which day]/[start class]/[end class]
-# api_2: query/[spl, djq, jlh]/[today, tomorrow]/[start class]/[end class]
+# api_1: /query/[spl, djq, jlh]/[which week]/[which day]/[start class]/[end class]
+# api_2: /query/[spl, djq, jlh]/[today, tomorrow]/[start class]/[end class]
 # api_2 可以通过当前时间计算好后转换为 api_1，所以这里只实现 api_1
 
 
 # 负责根据学期和校区对参数选项进行过滤
 #
 # 以下根据学期对参数进行合法界定：
-# 1. -1 学期
+# 1. xx-xx-1 学期
 #   (a) jlh
 #       week [1~4]
 #       date [1~7]
@@ -28,7 +28,7 @@ import MySQLdb
 #   (c) djq
 #       似乎没课，暂时同 (a)
 #
-# 2. -2 学期
+# 2. xx-xx-2 学期
 #   (a) jlh
 #       week [1~16]
 #       date [1~7]
@@ -44,7 +44,7 @@ import MySQLdb
 #       end_lesson[1~13]
 #       start_lesson <= end_lesson
 #
-# 3. -3 学期
+# 3. xx-xx-3 学期
 #   (a) jlh
 #       week [1~16]
 #       date [1~7]
@@ -181,7 +181,7 @@ def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
         else:
             spl.append(room)
     if campus == 'jlh':
-        return sortClassroomsByCN(jlh)
+        return sort_classroom_by_CN(jlh)
     elif campus == 'djq':
         return djq 
     elif campus == 'spl':
@@ -191,7 +191,7 @@ def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
 
 
 # 根据中文顺序对列表排序，返回排好序的列表
-def sortClassroomsByCN(l):
+def sort_classroom_by_CN(l):
     # 将九龙湖的教室进行排序，花费空间节省时间
     tmpJLH = []
     for room in l:
