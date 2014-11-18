@@ -1,0 +1,7 @@
+course_term = '14-15-1'
+course_term_id = '14151'
+exam_term = '13-14-3'
+db_host = 'localhost'
+db_username = '***'
+db_password = '***'
+db_name = '***'
