@@ -12,7 +12,7 @@ class QuickQueryHandler(tornado.web.RequestHandler):
 			campus, today_or_tomorrow, start_lesson, end_lesson)
 
 		if filter_result is None:
-			self.write(json.dumps([u'参数不对哦']))
+			self.write(json.dumps(['BAD_PARAMETER']))
 		else:
 			# access db
 			result = get_free_classrooms(

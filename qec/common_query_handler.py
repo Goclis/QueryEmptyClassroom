@@ -11,7 +11,7 @@ class CommonQueryHandler(tornado.web.RequestHandler):
 		filter_result = filter_common(campus, week, date, start_lesson, end_lesson)
 
 		if filter_result is None:
-			self.write(json.dumps([u'参数不对哦']))
+			self.write(json.dumps(['BAD_PARAMETER']))
 		else:
 			# access db
 			result = get_free_classrooms(
