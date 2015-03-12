@@ -5,15 +5,17 @@
 
 #@todo update_course需要处理掉针对年级为 * 的情况！
 
+import sys
+sys.path.insert(0, '../config')
+
 import MySQLdb
 import copy
 import requests
-import sys
-import crawlerconfig
+import config
 from lxml import etree as ET
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
+print config
+# reload(sys)
+# sys.setdefaultencoding('utf-8')
 
 # constant url
 ACADEMY_COURSE_LIST_URL = 'http://xk.urp.seu.edu.cn/jw_service/service/academyClassLook.action'
@@ -26,13 +28,13 @@ COURSE_SCHEDULE_SQL = "INSERT INTO course_schedule VALUES (%s, %s, %s, %s, %s, %
 EXAM_SCHEDULE_SQL = "INSERT INTO exam_schedule VALUES (%s, %s, %s, %s, %s)"
 
 # configure
-course_term = crawlerconfig.course_term
-course_term_id = crawlerconfig.course_term_id
-exam_term = crawlerconfig.exam_term
-host = crawlerconfig.db_host
-username = crawlerconfig.db_username
-password = crawlerconfig.db_password
-db_name = crawlerconfig.db_name
+course_term = config.course_term
+course_term_id = config.course_term_id
+exam_term = config.exam_term
+host = config.db_host
+username = config.db_username
+password = config.db_password
+db_name = config.db_name
 
 
 # truncate a table

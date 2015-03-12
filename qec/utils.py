@@ -1,13 +1,11 @@
 # -*- coding:utf-8 -*-
 
 from datetime import date as datelib, timedelta
-import config
+from config import config
 import MySQLdb
 import copy
 
-
 classrooms = None
-
 
 # @brief filter parameters of common query.
 #
@@ -26,7 +24,7 @@ def filter_common(campus, week, date, start_lesson, end_lesson):
 		end_lesson_high = 13
 		campus_options = ['djq', 'spl', 'jlh']
 
-		term_tail = config.TERM_ID[-1:]
+		term_tail = config.course_term_id[-1:]
 
 		# change limitation according to term_tail and campus
 		if term_tail == '1':
@@ -67,7 +65,7 @@ def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson):
 		return None
 
 	# convert today_or_tomorrow to week and date
-	start_date = datelib(config.START_YEAR, config.START_MONTH, config.START_DAY)
+	start_date = datelib(config.start_year, config.start_month, config.start_day)
 	check_date = datelib.today()
 	if today_or_tomorrow == 'tomorrow':
 		try:
@@ -88,7 +86,7 @@ def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson):
 
 def get_classroom_list():
 	connection = MySQLdb.connect(
-		host=config.DB_HOST, user=config.DB_USER, passwd=config.DB_PASS, db=config.DB_NAME, charset='utf8')
+		host=config.db_host, user=config.db_username, passwd=config.db_password, db=config.db_name, charset='utf8')
 	cursor = connection.cursor()
 
 	global classrooms
@@ -113,7 +111,7 @@ def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
 
 	try:
 		connection = MySQLdb.connect(
-			host=config.DB_HOST, user=config.DB_USER, passwd=config.DB_PASS, db=config.DB_NAME, charset='utf8')
+			host=config.db_host, user=config.db_username, passwd=config.db_password, db=config.db_name, charset='utf8')
 		cursor = connection.cursor()
 
 		rtn_classrooms = copy.deepcopy(classrooms)
