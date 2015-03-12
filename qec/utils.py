@@ -5,12 +5,13 @@ from config import config
 import MySQLdb
 import copy
 
+# 所有教室的列表
 classrooms = None
 
-# @brief filter parameters of common query.
+# @brief 检查参数是否满足通用查询的要求
 #
-# @return if parameter is ok, return the tuple (campus, week, date, start_lesson, end_lesson),
-#	else return None.
+# @return 如果参数符合要求，返回tuple(campus, week, date, start, end)，除了campus为str外，其他均为int
+#	如果不符合要求，返回None。
 def filter_common(campus, week, date, start_lesson, end_lesson):
 	try:
 		# some default limitation
@@ -56,34 +57,38 @@ def filter_common(campus, week, date, start_lesson, end_lesson):
 
 	return None
 
-# @brief filter paramters of quick query.
+
+# @brief 检查参数是否满足快速查询的要求
+#	先将参数转换为通用查询的参数，接着使用filter_common进行检查。
 #
-# @return if parameter is ok, return the tuple (campus, week, date, start_lesson, end_lesson),
-#	else return None.
+# @return 同filter_common
 def filter_quick(campus, today_or_tomorrow, start_lesson, end_lesson):
 	if today_or_tomorrow not in ['today', 'tomorrow']:
 		return None
 
-	# convert today_or_tomorrow to week and date
+	# 将今天/明天转换为相应的日期
 	start_date = datelib(config.start_year, config.start_month, config.start_day)
 	check_date = datelib.today()
 	if today_or_tomorrow == 'tomorrow':
 		try:
 			check_date = datelib(check_date.year, check_date.month, check_date.day + 1)
 		except:
-			# out of day
+			# 日超过了，累加到月上
 			try:
 				check_date = datelib(check_date.year, check_date.month + 1, check_date.day)
 			except:
-				# out of month
+				# 月超过了，累加到年上
 				check_date = datelib(check_date.year + 1, check_date.month, check_date.day)
 
+	# 和第一周周一的日期比较，计算出第几周周几
 	delta = check_date - start_date
 	week = delta.days / 7 + 1
 	date = check_date.isoweekday()
 
 	return filter_common(campus, week, date, start_lesson, end_lesson)
 
+
+# @brief 获取所有教室列表的方法
 def get_classroom_list():
 	connection = MySQLdb.connect(
 		host=config.db_host, user=config.db_username, passwd=config.db_password, db=config.db_name, charset='utf8')
@@ -97,7 +102,7 @@ def get_classroom_list():
 	for r in rs:
 		classrooms.append(r[0])
 
-	# Exceptions:
+	# 一些需要额外去除的教室
 	try:
 		classrooms.remove(u"九龙湖其它-大活322")
 	except:
@@ -106,6 +111,8 @@ def get_classroom_list():
 	connection.close()
 
 
+# @brief 根据指定参数获取空教室
+#	通过查询占用教室，接着从所有教室列表中筛选掉占用教室得到。
 def get_free_classrooms(campus, week, date, start_lesson, end_lesson):
 	global classrooms
 
@@ -204,9 +211,9 @@ def sort_classroom_by_CN(l):
 	return l
 
 
-
+# 在导入模块时尝试获取所有教室列表，出错则报错退出程序
 try:
 	get_classroom_list()
 except:
-	print 'Initialization failed.\n'
+	print '初始化qec/utils失败.'
 	exit()

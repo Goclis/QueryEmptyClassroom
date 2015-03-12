@@ -11,7 +11,6 @@ from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 
 class Application(tornado.web.Application):
-
 	def __init__(self):
 		handlers = [
 			(r'/query/([a-z]{3})/(\d{1,2})/(\d)/(\d{1,2})/(\d{1,2})', CommonQueryHandler),

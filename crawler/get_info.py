@@ -1,10 +1,6 @@
 # -*- coding:utf-8 -*-
 
-# 全校开课课表
-# URL: http://xk.urp.seu.edu.cn/jw_service/service/academyClassLook.action
-
-#@todo update_course需要处理掉针对年级为 * 的情况！
-
+# 把config所在文件夹加入搜索路径
 import sys
 sys.path.insert(0, '../config')
 
@@ -13,21 +9,22 @@ import copy
 import requests
 import config
 from lxml import etree as ET
-print config
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
 
-# constant url
+# 设置编码，保证中文为utf-8编码
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+# 数据来源URL
 ACADEMY_COURSE_LIST_URL = 'http://xk.urp.seu.edu.cn/jw_service/service/academyClassLook.action'
 ACADEMY_EXAM_LIST_URL = 'http://xk.urp.seu.edu.cn/jw_service/service/runAcademyClassDepartmentQueryAction.action'
 ACADEMY_PREFIX_URL = 'http://xk.urp.seu.edu.cn/jw_service/service/'
 
-# constant sql
+# SQL
 COURSE_SQL = "INSERT INTO course_info VALUES (%s, %s, %s, %s, %s)"
 COURSE_SCHEDULE_SQL = "INSERT INTO course_schedule VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 EXAM_SCHEDULE_SQL = "INSERT INTO exam_schedule VALUES (%s, %s, %s, %s, %s)"
 
-# configure
+# 读取配置文件
 course_term = config.course_term
 course_term_id = config.course_term_id
 exam_term = config.exam_term
@@ -37,8 +34,9 @@ password = config.db_password
 db_name = config.db_name
 
 
-# truncate a table
-# @tb_name - 表名
+# @brief 清空（truncate）数据库中指定的表
+# 
+# @param tb_name 要清空的表名
 def truncate_table(tb_name):
     connection = MySQLdb.connect(
         host=host, user=username, passwd=password, db=db_name, charset='utf8')
@@ -55,12 +53,12 @@ def truncate_table(tb_name):
     connection.commit()
 
 
-# 更新exam_schedule
+# @brief 更新考试记录表exam_schedule
 #
-# logic
-# 1. 从院系列表页获取各院系考试安排的链接
-# 2. 针对每个链接，获取其页面
-# 3. 过滤掉非选中学期的考试，分解字段，插入exam_schedule表中
+# @logic
+# 1. 从院系列表页获取各院系考试安排的链接。
+# 2. 针对每个链接，获取其页面。
+# 3. 过滤掉非选中学期的考试，分解字段，插入exam_schedule表中。
 def update_exam():
     response = requests.get(ACADEMY_EXAM_LIST_URL)
     html = ET.HTML(response.text)
@@ -86,7 +84,6 @@ def update_exam():
         for exam in exams:
             tds = exam.xpath('.//td')
 
-            # exam_term = exam_term
             exam_campus = tds[2].text.strip()
             exam_place = tds[6].text.strip()
             exam_datetime = tds[5].text.strip()
@@ -106,6 +103,7 @@ def update_exam():
 
     connection.commit()
     connection.close()
+
     log_string += '\n------------Update Exam Result-------------\n';
     report_string = 'Error(' + str(len(err_lines)) + ')\n'
     log_string += report_string
@@ -122,14 +120,17 @@ def truncate_exam():
     truncate_table('exam_schedule')
 
 
-# 分割如【2014-06-16 02:00(星期一)】这样的字符串
-# @dt - 如上描述的字符串
-# @return - 返回date和time的tuple
+# @brief 分割如【2014-06-16 02:00(星期一)】这样的字符串
+#   时间将被映射成为相应的数字。
 #
-# logic
-# 1. 分割成两段，第一段为考试日期，第二段具体时间
-# 2. 考试日期转换成整型 YYYYMMDD
-# 3. 考试时间根据时间划分为 0（上午09:00），1（02:00），2（其他时间）
+# @param dt 要分割的字符串
+#
+# @return 返回tuple(date, time)
+#
+# @logic
+# 1. 分割成两段，第一段为考试日期，第二段具体时间。
+# 2. 考试日期转换成整型，格式为YYYYMMDD。
+# 3. 考试时间根据时间划分为相应数据，0（上午09:00），1（02:00），2（其他时间）。
 def split_exam_datetime(dt):
     split_dt = dt.split(' ')
     part_1 = split_dt[0]
@@ -152,13 +153,13 @@ def split_exam_datetime(dt):
     return (date, time)
 
 
-# 更新course_info和course_schedule
+# @brief 更新course_info和course_schedule
 #
-# logic
-# 1. 获取各个院系的开课列表页面，提取各院系开课链接
-# 2. 针对每个链接，获取满足条件（如学期）的课程（行）
-# 3. 对每一项在course_info表中插入新课程
-# 4. 解析上课时间地点字段，插入course_schedule中
+# @logic
+# 1. 获取各个院系的开课列表页面，提取各院系开课链接。
+# 2. 针对每个链接，获取满足条件（如学期）的课程（行）。
+# 3. 对每一项在course_info表中插入新课程。
+# 4. 解析上课时间地点字段，插入course_schedule中。
 def update_course():
     response = requests.get(ACADEMY_COURSE_LIST_URL)
     html = ET.HTML(response.text)
@@ -253,15 +254,17 @@ def truncate_course():
     truncate_table('course_schedule')
 
 
-# 分割如【[1-16周] 周二(3-4)教七-30A,周四(双3-4)教七-30A】这样的数据
-# @course_info - 如上所述的字符串
-# @return - detail列表，列表中每一项参见detail_format的格式
+# @brief 分割如【[1-16周] 周二(3-4)教七-30A,周四(双3-4)教七-30A】这样的数据
+#
+# @param course_info 如上所述的字符串
+#
+# @return detail的list，list中每一项参见detail_format的格式
 # 
-# logic
-# 1. 将字段分为两段
-# 2. 前半段为[1-16周]这样的通用信息（一个字段记录可切为多个表中记录）
-# 3. 后半段根据逗号进行分割，再针对每一项提取信息，封装成一个detail，加入返回的结果
-# 4. 返回结果（detail list）
+# @logic
+# 1. 将字段分为两段。
+# 2. 前半段为[1-16周]这样的通用信息（一个字段记录可切为多个表中记录）。
+# 3. 后半段根据逗号进行分割，再针对每一项提取信息，封装成一个detail，加入返回的结果。
+# 4. 返回结果（detail list）。
 def split_course_info(course_info):
     split_result = []
     detail_format = {
@@ -334,7 +337,7 @@ def split_course_info(course_info):
     return split_result
 
 
-
+# 更新所有的表
 def update_all():
     truncate_course()
     truncate_exam()
@@ -342,30 +345,39 @@ def update_all():
     update_exam()
 
 
+# 打印帮助信息
 def print_help():
-    print u'\t all update function will truncate table, please backup at first.'
-    print u'\t-ua - update all tables'
-    print u'\t-uc - update course tables'
-    print u'\t-ue - update exam tables'
-    print u'\t-h - show help message'
+    print \
+    u'''
+    工具简介：获取上课教室及考试教室数据的爬虫
+    
+    用法：get_info.py [cmd]
+    
+    cmd：（所有的更新命令都会清空原表，请注意备份）
+    \t -ua, --update-all 更新所有的表
+    \t -uc, --update-course 更新和上课教室相关的表
+    \t -ue, --update-exam 更新和考试教室相关的表
+    \t -h, --help 打印帮助信息
+    '''
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         cmd = sys.argv[1]
 
-        if cmd == '-ua':
+        if cmd == '-ua' or cmd == '--update_all':
             update_all()
-        elif cmd == '-uc':
+        elif cmd == '-uc' or cmd == '--update-course':
             truncate_course()
             update_course()
-        elif cmd == '-ue':
+        elif cmd == '-ue' or cmd == '--update-exam':
             truncate_exam()
             update_exam()
-        elif cmd == '-h':
+        elif cmd == '-h' or cmd == '--help':
             print_help()
         else:
-            print 'Error parameters'
+            print '命令行参数错误'
             print_help()
     else:
-        print 'Error parameters'
+        print '命令行参数个数错误'
         print_help()
