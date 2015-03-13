@@ -57,6 +57,8 @@ __EXCEPTIONS__
 	- requests
 	- lxml
 
+运行中的计算（如今天是几号）依赖于系统时间，因此，需要保证机器时间准确，起码不要有天这一级别上错误。
+
 ## 3. 项目内容
 项目主要包含两部分，一为python实现的获取数据的爬虫，二为基于tornado框架的http server。
 
@@ -121,6 +123,8 @@ $ pwd
 $ crawler/get_info.py -ue
 ```
 
+另外，在执行时可能会因为`locale`的问题导致`UnicodeError`的发生，请确保`locale`为`xxx.UTF-8`（xxx使用`en_US`或者`zh_CN`都可以）。测试机通过在`.zshrc`中加入`export LC_ALL=en_US.UTF-8`解决了此问题。
+
 __数据来源__
 
 上课数据来源于[全校课表](http://xk.urp.seu.edu.cn/jw_service/service/academyClassLook.action)。
@@ -153,7 +157,7 @@ $ curl http://localhost:8000/query/today/1/3
 ```
 
 ## 4. 更新
-上课的信息每个学期都在变，甚至一个学期在选课前后也会大改不少，因此，数据库是需要更新的，使用爬虫脚本可以简化更新，但更新时仍要注意一些事情，这里大概给出步骤。
+上课的信息每个学期都在变，甚至一个学期在选课前后也会大改不少，因此，数据库是需要不断更新的，使用爬虫脚本可以简化更新过程，但更新时仍要注意一些事情，这里大概给出步骤。
 
 __修改配置文件__
 
