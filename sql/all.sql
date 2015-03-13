@@ -19,7 +19,7 @@ CREATE TABLE course_schedule (
 	course_type int,				# 单双周，0-全，1-单，2-双
 	course_place varchar(255),		# 上课地点
 
-	PRIMARY KEY (course_id, course_date, course_start_lesson, course_end_lesson),
+	PRIMARY KEY (course_id, course_date, course_start_lesson, course_end_lesson, course_type),
 	FOREIGN KEY (course_id) REFERENCES course_info(course_id)
 ) default charset=utf8;
 
