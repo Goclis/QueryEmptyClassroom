@@ -71,6 +71,7 @@ def update_exam():
     log_string = ""
     lineno = 1
     err_lines = []
+    last_success_sql = ''
 
     for department in department_nodes:
         academy_href = department.attrib['href']
@@ -95,11 +96,14 @@ def update_exam():
                 cursor.execute(EXAM_SCHEDULE_SQL, values)
                 connection.commit()
                 log_string += "EXECUTE: " + sql + '\n'
+                last_success_sql = sql
                 lineno += 1
             except:
-                err_lines.append(lineno)
-                lineno += 1
-                log_string += 'ERROR: ' + sql + '\n'
+                # 过滤掉重复执行相同sql导致的错误
+                if last_success_sql != sql:
+                    err_lines.append(lineno)
+                    lineno += 1
+                    log_string += 'ERROR: ' + sql + '\n'
 
     connection.commit()
     connection.close()
