@@ -213,7 +213,8 @@ def update_course():
                 log_string += ('ERROR: ' + sql + '\n')
                 err_lines.append(lineno)
                 lineno += 1
-            
+
+            last_success_sql = ''
             for detail in course_schedule_details:
                 course_start_week = str(detail['course_start_week'])
                 course_end_week = str(detail['course_end_week'])
@@ -231,12 +232,15 @@ def update_course():
                 try:
                     cursor.execute(COURSE_SCHEDULE_SQL, values)
                     connection.commit()
-                    log_string += ('EXECUTE: ' + sql + '\n') 
+                    log_string += ('EXECUTE: ' + sql + '\n')
+                    last_success_sql = sql
                     lineno += 1
                 except:
-                    log_string += ('ERROR: ' + sql + '\n')
-                    err_lines.append(lineno)
-                    lineno += 1
+                    # 过滤掉重复执行相同sql导致的错误
+                    if last_success_sql != sql:
+                        log_string += ('ERROR: ' + sql + '\n')
+                        err_lines.append(lineno)
+                        lineno += 1
 
     connection.commit()
     connection.close()

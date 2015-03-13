@@ -38,7 +38,7 @@ __URL__
 
 __PARAMTERS__
 
-- 天：可选值为[today, tomorrow]，分别代表今天，明天。
+- `天`：可选值为[today, tomorrow]，分别代表今天，明天。
 - 其他参数同`1.1`。
 
 __EXCEPTIONS__
@@ -54,10 +54,14 @@ __EXCEPTIONS__
 - Tornado
 - Python Libs
 	- MySQLdb
-	- requests
-	- lxml
 
 运行中的计算（如今天是几号）依赖于系统时间，因此，需要保证机器时间准确，起码不要有天这一级别上错误。
+
+__爬虫额外依赖__
+
+- Python Libs
+	- lxml
+	- requests
 
 ## 3. 项目内容
 项目主要包含两部分，一为python实现的获取数据的爬虫，二为基于tornado框架的http server。
